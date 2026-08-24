@@ -1,26 +1,26 @@
-// Dữ liệu người chơi
-let player = {
-    level: 1, exp: 0,
-    kc: 300, xu: 1000, vpnc: 1000, vntb: 2,
-    inventory: [],
-    giftcodesUsed: []
-};
-
-// Cơ sở dữ liệu tướng chuẩn
+// Cấu hình thông số như cũ
+let player = { level: 1, exp: 0, kc: 300, xu: 1000, vpnc: 1000, vntb: 2, inventory: [], giftcodesUsed: [] };
 const db_characters = {
     'kangu': { name: 'Kangu', type: 'DEF', base_hp: 150000000, base_atk: 13275000, base_def: 6400, spd: 145, max_en: 4 },
     'mega_ner': { name: 'Mega Ner', type: 'ATK', base_hp: 220000000, base_atk: 14175000, base_def: 1900, spd: 150, max_en: 5 },
     'jaco': { name: 'Jaco', type: 'SKL', base_hp: 190000000, base_atk: 11475000, base_def: 3200, spd: 155, max_en: 4.5 }
 };
+let player_roster = [{ id: 'kangu', level: 1 }, { id: 'mega_ner', level: 1 }, { id: 'jaco', level: 1 }];
+let player_team = ['kangu', 'mega_ner', 'jaco'];
 
-// Đội hình sở hữu của người chơi
-let player_roster = [
-    { id: 'kangu', level: 1 },
-    { id: 'mega_ner', level: 1 },
-    { id: 'jaco', level: 1 }
-];
-
-let player_team = ['kangu', 'mega_ner', 'jaco']; // Đội hình ra trận (Vị trí 1, 2, 3)
+// ==========================================
+// HỆ THỐNG TOAST (Thay thế hoàn toàn alert)
+// ==========================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerText = message;
+    container.appendChild(toast);
+    
+    // Tự động xóa khỏi DOM sau 2 giây
+    setTimeout(() => { toast.remove(); }, 2000);
+}
 
 // ==========================================
 // HỆ THỐNG GIAO DIỆN & TIỆN ÍCH
@@ -41,67 +41,68 @@ function navTo(screenId) {
     if(screenId === 'screen-roster') renderRoster();
 }
 
-// Cập nhật ngày giờ thực tế cho mục Sự kiện
 setInterval(() => {
     let now = new Date();
     let eventTimeElem = document.getElementById('event-time');
-    if(eventTimeElem) eventTimeElem.innerText = "Thời gian Server: " + now.toLocaleString('vi-VN');
+    if(eventTimeElem) eventTimeElem.innerText = "Giờ máy chủ: " + now.toLocaleString('vi-VN');
 }, 1000);
 
 // ==========================================
-// HỆ THỐNG SỰ KIỆN & GIFTCODE
+// SỰ KIỆN & GACHA
 // ==========================================
 function claimGiftcode() {
     let code = document.getElementById('giftcode-input').value.toUpperCase().trim();
     if(code === 'CODETUAN001' && !player.giftcodesUsed.includes(code)) {
         player.kc += 400;
         player.giftcodesUsed.push(code);
-        alert("Sử dụng Giftcode thành công! Bạn nhận được 400 Kim Cương.");
+        showToast("Nhận thành công 400 Kim Cương!", "success");
         updateUI();
     } else {
-        alert("Giftcode không hợp lệ hoặc đã được sử dụng!");
+        showToast("Code sai hoặc đã sử dụng!", "error");
     }
 }
 
-// ==========================================
-// HỆ THỐNG TRIỆU HỒI (GACHA)
-// ==========================================
-function switchGachaTab(tab) {
+function switchGachaTab(tab, btnElem) {
     document.querySelectorAll('.gacha-content').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('gacha-tab-' + tab).classList.add('active');
+    btnElem.classList.add('active');
 }
 
-function dailyLogin() { alert("Điểm danh thành công! Nhận 50 KC, 100 Xu."); player.kc+=50; player.xu+=100; updateUI(); }
+function dailyLogin() { 
+    player.kc += 50; player.xu += 100; 
+    showToast("Điểm danh thành công! +50 KC, +100 Xu"); 
+    updateUI(); 
+}
 
 function summon() {
-    if(player.vntb < 1) return alert("Không đủ Viên Ngọc Thần Bí (VNTB)!");
+    if(player.vntb < 1) return showToast("Không đủ Viên Ngọc Thần Bí!", "error");
     player.vntb -= 1;
     let roll = Math.random() * 100;
-    let resText = "";
     
-    // Tỉ lệ: 50% ra Xu, 40% ra KC, 10% ra Mảnh Tướng (Ví dụ đơn giản)
-    if(roll < 50) { player.xu += 5000; resText = "Nhận được 5000 Xu!"; }
-    else if(roll < 90) { player.kc += 100; resText = "Nhận được 100 Kim Cương!"; }
-    else { resText = "Wow! Bạn nhận được Mảnh Tướng ngẫu nhiên!"; }
+    if(roll < 50) { player.xu += 5000; showToast("Triệu hồi ra: 5000 Xu!"); }
+    else if(roll < 90) { player.kc += 100; showToast("Triệu hồi ra: 100 Kim Cương!"); }
+    else { showToast("Nhân phẩm bùng nổ! Nhận được Mảnh Tướng!", "warn"); }
     
-    document.getElementById('summon-result').innerText = resText;
     updateUI();
 }
 
 // ==========================================
-// HỆ THỐNG ẢI & NÂNG CẤP
+// HỆ THỐNG ẢI & NÂNG CẤP TƯỚNG
 // ==========================================
 function renderStages() {
     let container = document.getElementById('chapters-container');
     container.innerHTML = "";
     for(let c = 1; c <= 5; c++) {
         let chapDiv = document.createElement('div');
-        chapDiv.className = 'chapter';
+        chapDiv.className = 'panel';
         chapDiv.innerHTML = `<h3>Chương ${c}</h3>`;
+        let btnHTML = '';
         for(let s = 1; s <= 7; s++) {
-            let bossTxt = (s === 7) ? " (BOSS)" : "";
-            chapDiv.innerHTML += `<button class="stage-btn" onclick="startBattle(${c}, ${s})">Ải ${s}${bossTxt} - Chưa hoạt động</button>`;
+            let bossTxt = (s === 7) ? " 💀" : "";
+            btnHTML += `<button class="back-btn" style="display:inline-block; margin:5px; width:auto; background:#475569;" onclick="startBattle(${c}, ${s})">Ải ${s}${bossTxt}</button>`;
         }
+        chapDiv.innerHTML += btnHTML;
         container.appendChild(chapDiv);
     }
 }
@@ -111,86 +112,86 @@ function renderRoster() {
     list.innerHTML = "";
     player_roster.forEach(char => {
         let db = db_characters[char.id];
-        list.innerHTML += `<div class="char-card">
-            <b>${db.name}</b> (${db.type}) - Lv: ${char.level}<br>
-            HP: ${db.base_hp} | ATK: ${db.base_atk} | DEF: ${db.base_def}<br>
-            <button onclick="upgradeChar('${char.id}')">Nâng cấp (Tốn VPNC)</button>
+        let cost = char.level * 100;
+        
+        // Tính toán nhẹ chỉ số tăng lên (Ví dụ)
+        let hp = Math.floor(db.base_hp * (1 + char.level * 0.05));
+        let atk = Math.floor(db.base_atk * (1 + char.level * 0.05));
+        
+        list.innerHTML += `
+        <div class="char-card">
+            <h3>${db.name} <span style="font-size:0.7em; color:#fff;">[${db.type}]</span></h3>
+            <div class="char-stats">
+                <b>Cấp độ:</b> ${char.level} / 250<br>
+                <b>HP:</b> ${hp.toLocaleString()} <br>
+                <b>ATK:</b> ${atk.toLocaleString()} <br>
+                <b>DEF:</b> ${db.base_def}
+            </div>
+            <button class="upgrade-btn" onclick="upgradeChar('${char.id}')">Nâng cấp (${cost} ⭐)</button>
         </div>`;
     });
 }
 
 function upgradeChar(id) {
     let char = player_roster.find(c => c.id === id);
-    let cost = char.level * 100; // Công thức tính cost cơ bản
-    if(char.level >= 250) return alert("Tướng đã đạt cấp tối đa!");
+    let cost = char.level * 100;
+    if(char.level >= 250) return showToast("Tướng đã đạt cấp 250 (MAX)!", "error");
+    
     if(player.vpnc >= cost) {
         player.vpnc -= cost;
         char.level++;
-        alert(`Nâng cấp ${db_characters[id].name} lên Lv ${char.level} thành công!`);
+        showToast(`Nâng cấp ${db_characters[id].name} lên Lv ${char.level} thành công!`);
         updateUI();
         renderRoster();
     } else {
-        alert(`Không đủ VPNC! Cần ${cost} VPNC.`);
+        showToast(`Cần thêm ${cost - player.vpnc} VPNC để nâng cấp!`, "error");
     }
 }
 
 // ==========================================
-// HỆ THỐNG CHIẾN ĐẤU (BATTLE ENGINE)
+// HỆ THỐNG CHIẾN ĐẤU (Không đổi logic cũ, chỉ ẩn thông báo)
 // ==========================================
 let battleInterval;
 
 function startBattle(chapter, stage) {
-    alert(`Bạn đã bấm vào Ải ${stage} Chương ${chapter}. Hệ thống ải hiện Đang Phát Triển. Bắt đầu mô phỏng đánh thử với Bot mặc định!`);
+    showToast(`Bắt đầu mô phỏng đánh Ải ${stage} - Chương ${chapter}`, "warn");
     navTo('screen-battle');
     document.getElementById('end-battle-btn').style.display = 'none';
+    document.getElementById('battle-log').innerHTML = ''; // Reset log
     
-    // Khởi tạo thực thể chiến đấu
     let allyTeam = initTeam(player_team, true);
-    let enemyTeam = initTeam(['jaco', 'mega_ner', 'kangu'], false); // Bot
-    
+    let enemyTeam = initTeam(['jaco', 'mega_ner', 'kangu'], false); 
     let allFighters = [...allyTeam, ...enemyTeam];
-    // Sắp xếp tốc độ đánh (SPD cao đánh trước)
     allFighters.sort((a, b) => b.spd - a.spd);
     
-    // Đầu trận random đội đi trước (Boost nhẹ tốc độ tạm thời cho đội đó)
-    let firstStrikeTeam = Math.random() > 0.5 ? 'ally' : 'enemy';
-    logBattle(`[Hệ Thống] Đội ${firstStrikeTeam === 'ally' ? 'Người Chơi' : 'Kẻ Địch'} giành quyền ra tay trước!`);
-    
+    logBattle(`[Hệ Thống] Trận đấu bắt đầu!`);
     renderBattleArena(allyTeam, enemyTeam);
     
     let currentTurnIndex = 0;
     
-    // Auto Combat Loop (1s / 1 hành động)
     battleInterval = setInterval(() => {
         let aliveAllies = allyTeam.filter(c => c.hp > 0);
         let aliveEnemies = enemyTeam.filter(c => c.hp > 0);
         
-        // Check Win/Lose
         if(aliveAllies.length === 0 || aliveEnemies.length === 0) {
             clearInterval(battleInterval);
             let win = aliveAllies.length > 0;
-            logBattle(`====== TRẬN ĐẤU KẾT THÚC ======`);
-            logBattle(win ? `🎉 CHIẾN THẮNG! Nhận 50 EXP.` : `💀 THẤT BẠI.`);
+            logBattle(`<br><b>====== KẾT QUẢ ======</b>`);
+            logBattle(win ? `<span style="color:#10b981">🎉 CHIẾN THẮNG! +50 EXP</span>` : `<span style="color:#ef4444">💀 THẤT BẠI.</span>`);
             if(win) { player.exp += 50; updateUI(); }
             document.getElementById('end-battle-btn').style.display = 'block';
             return;
         }
 
-        // Lấy nhân vật đánh lượt này
         let actor = allFighters[currentTurnIndex % allFighters.length];
         currentTurnIndex++;
-        
-        if(actor.hp <= 0) return; // Đã chết thì bỏ qua
+        if(actor.hp <= 0) return; 
         
         let targetTeam = actor.isAlly ? aliveEnemies : aliveAllies;
         let myTeam = actor.isAlly ? aliveAllies : aliveEnemies;
         
-        // Logic ra chiêu
-        if(actor.en >= actor.max_en) {
-            castActiveSkill(actor, targetTeam, myTeam);
-        } else {
-            castNormalAttack(actor, targetTeam, myTeam);
-        }
+        if(actor.en >= actor.max_en) castActiveSkill(actor, targetTeam, myTeam);
+        else castNormalAttack(actor, targetTeam, myTeam);
         
         renderBattleArena(allyTeam, enemyTeam);
         
@@ -200,75 +201,40 @@ function startBattle(chapter, stage) {
 function initTeam(ids, isAlly) {
     return ids.map((id, index) => {
         let db = db_characters[id];
-        // Trong thực tế sẽ scale chỉ số theo level, ở đây lấy base
+        let charData = player_roster.find(c => c.id === id); // Lấy level thật của người chơi
+        let lvl = isAlly ? charData.level : 1; // Bot mặc định lv 1
+        
+        let hp = Math.floor(db.base_hp * (1 + lvl * 0.05));
+        let atk = Math.floor(db.base_atk * (1 + lvl * 0.05));
+
         return {
             id: id, name: db.name, isAlly: isAlly,
-            hp: db.base_hp, max_hp: db.base_hp,
-            atk: db.base_atk, def: db.base_def, spd: db.spd,
-            en: db.id === 'mega_ner' ? 2 : 0, // Mega Ner Passive 1: Start 2 EN (Lv50)
-            max_en: db.max_en,
-            pos: index + 1 // 1: Front, 2: Back, 3: Side
+            hp: hp, max_hp: hp,
+            atk: atk, def: db.base_def, spd: db.spd,
+            en: db.id === 'mega_ner' ? 2 : 0, 
+            max_en: db.max_en, pos: index + 1
         };
     });
 }
 
-function calcDamage(atk, skillMultiplier, targetDef) {
-    let rawDmg = atk * skillMultiplier;
-    // Cứ 100 DEF giảm 0.1% ST => DEF * 0.001 % giảm
-    let defReductionPercent = (targetDef / 100) * 0.001; 
-    if(defReductionPercent > 0.9) defReductionPercent = 0.9; // Max 90% giảm ST
-    return Math.floor(rawDmg * (1 - defReductionPercent));
+function calcDamage(atk, mult, def) {
+    let raw = atk * mult;
+    let defRed = Math.min((def / 100) * 0.001, 0.9);
+    return Math.floor(raw * (1 - defRed));
 }
 
 function castNormalAttack(actor, enemies, allies) {
-    let target = enemies[0]; // Mặc định đánh vị trí 1
-    let dmg = 0;
-    
-    if(actor.id === 'kangu') {
-        dmg = calcDamage(actor.atk, 0.85, target.def);
-        target.hp -= dmg;
-        actor.en += 1.7;
-        logBattle(`🛡️ ${actor.name} chém ${target.name} gây ${dmg} ST.`);
-    } 
-    else if(actor.id === 'mega_ner') {
-        logBattle(`🔥 ${actor.name} tung đòn diện rộng!`);
-        enemies.forEach(e => {
-            dmg = calcDamage(actor.atk, 0.95, e.def);
-            e.hp -= dmg;
-        });
-        actor.en += 1.4;
-    }
-    else if(actor.id === 'jaco') {
-        dmg = calcDamage(actor.atk, 0.88, target.def);
-        target.hp -= dmg;
-        actor.en += 1.2;
-        logBattle(`✨ ${actor.name} bắn ${target.name} gây ${dmg} ST, đánh dấu HP!`);
-    }
+    let target = enemies[0]; let dmg = 0;
+    if(actor.id === 'kangu') { dmg = calcDamage(actor.atk, 0.85, target.def); target.hp -= dmg; actor.en += 1.7; logBattle(`🛡️ ${actor.name} chém ${target.name} (-${dmg.toLocaleString()} HP)`); } 
+    else if(actor.id === 'mega_ner') { logBattle(`🔥 ${actor.name} tung đòn diện rộng!`); enemies.forEach(e => { dmg = calcDamage(actor.atk, 0.95, e.def); e.hp -= dmg; }); actor.en += 1.4; }
+    else if(actor.id === 'jaco') { dmg = calcDamage(actor.atk, 0.88, target.def); target.hp -= dmg; actor.en += 1.2; logBattle(`✨ ${actor.name} bắn ${target.name} (-${dmg.toLocaleString()} HP)`); }
 }
 
 function castActiveSkill(actor, enemies, allies) {
-    actor.en = 0; // Xoá Năng lượng
-    let target = enemies[0];
-    let dmg = 0;
-    logBattle(`💥 [KỸ NĂNG] ${actor.name} kích hoạt tuyệt chiêu!`);
-    
-    if(actor.id === 'kangu') {
-        dmg = calcDamage(actor.atk, 2.0, target.def) + (target.hp * 0.05); // 200% ATK + 5% HP còn lại
-        target.hp -= dmg;
-        logBattle(`☄️ Kangu phóng tia năng lượng gây ${Math.floor(dmg)} ST, gây Suy Giảm!`);
-    }
-    else if(actor.id === 'mega_ner') {
-        dmg = calcDamage(actor.atk, 2.8, target.def);
-        target.hp -= dmg;
-        logBattle(`⚔️ Mega Ner dịch chuyển chém ${target.name} gây ${dmg} ST!`);
-    }
-    else if(actor.id === 'jaco') {
-        dmg = calcDamage(actor.atk, 1.05, target.def);
-        target.hp -= dmg;
-        let heal = actor.atk * 1.5; // Hồi 150% ATK
-        allies.forEach(a => { a.hp += heal; if(a.hp > a.max_hp) a.hp = a.max_hp; });
-        logBattle(`🌿 Jaco gây ${dmg} ST và Hồi toàn đội ${heal} HP!`);
-    }
+    actor.en = 0; let target = enemies[0]; let dmg = 0;
+    if(actor.id === 'kangu') { dmg = calcDamage(actor.atk, 2.0, target.def) + (target.hp * 0.05); target.hp -= dmg; logBattle(`☄️ <b>Kangu</b> phóng tia năng lượng (-${Math.floor(dmg).toLocaleString()} HP)`); }
+    else if(actor.id === 'mega_ner') { dmg = calcDamage(actor.atk, 2.8, target.def); target.hp -= dmg; logBattle(`⚔️ <b>Mega Ner</b> dịch chuyển chém (-${dmg.toLocaleString()} HP)`); }
+    else if(actor.id === 'jaco') { dmg = calcDamage(actor.atk, 1.05, target.def); target.hp -= dmg; let heal = actor.atk * 1.5; allies.forEach(a => { a.hp = Math.min(a.max_hp, a.hp + heal); }); logBattle(`🌿 <b>Jaco</b> tấn công và Hồi toàn đội (+${Math.floor(heal).toLocaleString()} HP)`); }
 }
 
 function logBattle(msg) {
@@ -279,27 +245,23 @@ function logBattle(msg) {
 
 function renderBattleArena(allies, enemies) {
     let allyHtml = '', enemyHtml = '';
-    
     allies.forEach(c => {
         let hpPct = Math.max(0, (c.hp / c.max_hp) * 100);
-        allyHtml += `<div class="char-card">
-            <b>${c.name}</b> (Pos ${c.pos})<br>
-            EN: ${c.en.toFixed(1)} / ${c.max_en}<br>
+        allyHtml += `<div class="char-card" style="text-align:left;">
+            <b>${c.name}</b> <small>(Vị trí ${c.pos})</small><br>
+            <small style="color:#60a5fa">EN: ${c.en.toFixed(1)}/${c.max_en}</small>
             <div class="health-bar"><div class="health-fill" style="width:${hpPct}%"></div></div>
         </div>`;
     });
-    
     enemies.forEach(c => {
         let hpPct = Math.max(0, (c.hp / c.max_hp) * 100);
-        enemyHtml += `<div class="char-card" style="border-color:#e74c3c;">
-            <b>${c.name}</b> (Pos ${c.pos})<br>
+        enemyHtml += `<div class="char-card" style="text-align:left;">
+            <b>${c.name}</b> <small>(Vị trí ${c.pos})</small><br>
             <div class="health-bar"><div class="health-fill" style="width:${hpPct}%"></div></div>
         </div>`;
     });
-    
     document.getElementById('team-player').innerHTML = allyHtml;
     document.getElementById('team-enemy').innerHTML = enemyHtml;
 }
 
-// Khởi chạy UI ban đầu
 updateUI();
