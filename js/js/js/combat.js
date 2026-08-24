@@ -1,31 +1,48 @@
 class CombatUnit {
   // ...
-  getDefDamageReduction() {
-    const def = this.getDef();
-    // Cứ 100 DEF giảm 0.1% ST => DEF / 100,000
-    const reduction = def / _GAME_CONSTANTS.DEF_REDUCTION_FACTOR;
-    return Math.min(0.90, reduction);
+  // Hào quang giảm sát thương toàn đội từ F.Hit (Bị động 3)
+  getTeamAuraReduction(myTeam) {
+    if (!myTeam) return 0;
+    const hitUnit = myTeam.find(u => u.heroId === "hit" && u.isAlive());
+    if (!hitUnit || hitUnit.level < 100) return 0;
+
+    let reduction = 0.05; // 5% cơ bản
+    const hasDeadAlly = myTeam.some(u => !u.isAlive());
+    if (hasDeadAlly || hitUnit.hasRevived) {
+      reduction += 0.08; // Tăng thêm 8% (tổng 13%)
+    }
+    return reduction;
   }
 
-  takeDamage(rawDamage, attacker = null) {
-    const reduction = this.getDefDamageReduction();
-    const finalDamage = Math.max(1, Math.floor(rawDamage * (1 - reduction)));
+  takeDamage(rawDamage, attacker = null, myTeam = null) {
+    const defReduction = this.getDefDamageReduction();
+    const auraReduction = this.getTeamAuraReduction(myTeam);
+    const totalReduction = Math.min(0.95, defReduction + auraReduction);
+    const finalDamage = Math.max(1, Math.floor(rawDamage * (1 - totalReduction)));
+
+    // Bị động 1 của F.Hit: Hồi sinh nhận 80% HP tối đa (1 lần/trận)
+    if (this.currentHp - finalDamage <= 0 && this.heroId === "hit" && !this.hasRevived && this.level >= 50) {
+      this.hasRevived = true;
+      this.currentHp = Math.floor(this.maxHp * 0.80);
+      return { finalDamage, isDead: false, revived: true, reductionPercent: (totalReduction * 100).toFixed(1) };
+    }
+
     this.currentHp = Math.max(0, this.currentHp - finalDamage);
-    return { finalDamage, isDead: !this.isAlive(), reductionPercent: (reduction * 100).toFixed(1) };
+    return { finalDamage, isDead: !this.isAlive(), revived: false, reductionPercent: (totalReduction * 100).toFixed(1) };
   }
 
-  heal(amount, healer = null) {
-    let effectiveAmount = amount * this.getHealingMultiplier();
-    // Jaco P2 (Lv 80): Đồng đội < 50% HP tăng thêm 20% lượng hồi phục từ Jaco
-    if (healer && healer.heroId === "jaco" && healer.level >= 80 && (this.currentHp / this.maxHp) < 0.50) {
-      effectiveAmount *= 1.20;
-    }
-    // Jaco P3 (Lv 100): Đồng đội đủ 3 dấu "HP" tăng thêm 10% lượng hồi phục
-    if (healer && healer.heroId === "jaco" && healer.level >= 100 && this.hpMarks >= 3) {
-      effectiveAmount *= 1.10;
-    }
-    const actualHeal = Math.min(this.maxHp - this.currentHp, Math.floor(effectiveAmount));
-    this.currentHp = Math.min(this.maxHp, this.currentHp + actualHeal);
-    return actualHeal;
+  // Xử lý sát thương DoT Ăn Mòn đầu mỗi hiệp
+  processTurnStartDoT(callbacks) {
+    if (!this.isAlive() || this.corrosionStacks <= 0) return;
+    
+    const dmgPerStack = Math.min(this.maxHp * 0.03, this.corrosionCasterAtk * 0.23);
+    const totalCorrosionDmg = Math.max(1, Math.floor(dmgPerStack * this.corrosionStacks));
+    this.currentHp = Math.max(0, this.currentHp - totalCorrosionDmg);
+    
+    callbacks.onDamage(this, totalCorrosionDmg, false, "corrosion");
+    callbacks.onLog(`   ☣️ [${this.name}] chịu ${totalCorrosionDmg.toLocaleString()} ST từ [ĂN MÒN] (${this.corrosionStacks} tầng).`);
+    
+    this.corrosionDuration--;
+    if (this.corrosionDuration <= 0) this.corrosionStacks = 0;
   }
 }
