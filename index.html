@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Battler RPG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- HEADER: Thông tin tài nguyên -->
+        <div id="header">
+            <span title="Level">🏆 Lv: <span id="player-lv">1</span> (<span id="player-exp">0</span>/100)</span>
+            <span title="Kim Cương">💎 <span id="res-kc">300</span></span>
+            <span title="Xu">🪙 <span id="res-xu">1000</span></span>
+            <span title="Vật phẩm nâng cấp">⭐ <span id="res-vpnc">1000</span></span>
+            <span title="Viên ngọc thần bí">🔮 <span id="res-vntb">2</span></span>
+        </div>
+
+        <!-- SẢNH CHÍNH -->
+        <div id="screen-lobby" class="screen active">
+            <h1>SẢNH CHÍNH</h1>
+            <div class="menu-grid">
+                <button onclick="navTo('screen-stage')">⚔️ Đấu Ải</button>
+                <button onclick="navTo('screen-event')">🎁 Sự Kiện</button>
+                <button onclick="navTo('screen-gacha')">🔮 Triệu Hồi</button>
+                <button onclick="navTo('screen-roster')">🛡️ Danh Sách & Nâng Cấp</button>
+                <button onclick="navTo('screen-inventory')">🎒 Túi Đồ</button>
+            </div>
+        </div>
+
+        <!-- MÀN HÌNH ĐẤU ẢI -->
+        <div id="screen-stage" class="screen">
+            <h2>HỆ THỐNG ẢI CHIẾN ĐẤU</h2>
+            <div id="chapters-container">
+                <!-- Javascript sẽ render 5 chương, 7 ải ở đây -->
+            </div>
+            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
+        </div>
+
+        <!-- MÀN HÌNH SỰ KIỆN -->
+        <div id="screen-event" class="screen">
+            <h2>SỰ KIỆN</h2>
+            <p>Chúng tôi sẽ sớm cập nhập sự kiện thú vị!</p>
+            <div class="giftcode-box">
+                <input type="text" id="giftcode-input" placeholder="Nhập Giftcode tại đây">
+                <button onclick="claimGiftcode()">Nhận Quà</button>
+            </div>
+            <p id="event-time"></p>
+            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
+        </div>
+
+        <!-- MÀN HÌNH TRIỆU HỒI -->
+        <div id="screen-gacha" class="screen">
+            <h2>KHU TRIỆU HỒI</h2>
+            <div class="tabs">
+                <button onclick="switchGachaTab(1)">🎡 Khu Vui Chơi (Điểm danh)</button>
+                <button onclick="switchGachaTab(2)">🔮 Triệu Hồi Nhân Vật</button>
+            </div>
+            <div id="gacha-tab-1" class="gacha-content active">
+                <p>Đăng nhập hằng ngày nhận thưởng!</p>
+                <button onclick="dailyLogin()">Điểm danh hôm nay</button>
+            </div>
+            <div id="gacha-tab-2" class="gacha-content">
+                <p>Tỉ lệ: Kim cương/Xu cao, Tướng thấp (1 VNTB/lượt)</p>
+                <button onclick="summon()">Triệu Hồi (1 🔮)</button>
+                <p id="summon-result"></p>
+            </div>
+            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
+        </div>
+
+        <!-- MÀN HÌNH NHÂN VẬT & NÂNG CẤP -->
+        <div id="screen-roster" class="screen">
+            <h2>DANH SÁCH TƯỚNG</h2>
+            <div id="roster-list"></div>
+            <div class="team-setup">
+                <h3>Đội hình hiện tại (Vị trí 1 - 2 - 3)</h3>
+                <p>Gợi ý: 1 (DEF) - 2 (ATK) - 3 (SKL)</p>
+                <div id="current-team-display"></div>
+            </div>
+            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
+        </div>
+
+        <!-- MÀN HÌNH TÚI ĐỒ -->
+        <div id="screen-inventory" class="screen">
+            <h2>TÚI ĐỒ</h2>
+            <p>Kho chứa vật phẩm của bạn.</p>
+            <ul id="inventory-list"></ul>
+            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
+        </div>
+
+        <!-- MÀN HÌNH CHIẾN ĐẤU -->
+        <div id="screen-battle" class="screen">
+            <h2>CHIẾN ĐẤU TRỰC TIẾP</h2>
+            <div class="battle-arena">
+                <div id="team-player" class="team-side"></div>
+                <div id="battle-log">Trận đấu bắt đầu...</div>
+                <div id="team-enemy" class="team-side"></div>
+            </div>
+            <button id="end-battle-btn" style="display:none" onclick="navTo('screen-lobby')">Kết thúc trận</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
