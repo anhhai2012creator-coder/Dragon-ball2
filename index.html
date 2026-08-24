@@ -4,102 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auto Battler RPG</title>
+    <!-- Thêm font chữ phong cách game -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <!-- HEADER: Thông tin tài nguyên -->
         <div id="header">
-            <span title="Level">🏆 Lv: <span id="player-lv">1</span> (<span id="player-exp">0</span>/100)</span>
-            <span title="Kim Cương">💎 <span id="res-kc">300</span></span>
-            <span title="Xu">🪙 <span id="res-xu">1000</span></span>
-            <span title="Vật phẩm nâng cấp">⭐ <span id="res-vpnc">1000</span></span>
-            <span title="Viên ngọc thần bí">🔮 <span id="res-vntb">2</span></span>
+            <div class="res-badge" title="Level">🏆 Lv: <span id="player-lv">1</span> <small>(<span id="player-exp">0</span>/100)</small></div>
+            <div class="res-badge" title="Kim Cương">💎 <span id="res-kc">300</span></div>
+            <div class="res-badge" title="Xu">🪙 <span id="res-xu">1000</span></div>
+            <div class="res-badge" title="Vật phẩm nâng cấp">⭐ <span id="res-vpnc">1000</span></div>
+            <div class="res-badge" title="Viên ngọc thần bí">🔮 <span id="res-vntb">2</span></div>
         </div>
 
-        <!-- SẢNH CHÍNH -->
-        <div id="screen-lobby" class="screen active">
-            <h1>SẢNH CHÍNH</h1>
-            <div class="menu-grid">
-                <button onclick="navTo('screen-stage')">⚔️ Đấu Ải</button>
-                <button onclick="navTo('screen-event')">🎁 Sự Kiện</button>
-                <button onclick="navTo('screen-gacha')">🔮 Triệu Hồi</button>
-                <button onclick="navTo('screen-roster')">🛡️ Danh Sách & Nâng Cấp</button>
-                <button onclick="navTo('screen-inventory')">🎒 Túi Đồ</button>
+        <div id="main-content">
+            <!-- SẢNH CHÍNH -->
+            <div id="screen-lobby" class="screen active">
+                <h1 class="title">SẢNH CHÍNH</h1>
+                <div class="menu-grid">
+                    <button class="menu-btn" onclick="navTo('screen-stage')"><span class="icon">⚔️</span> Đấu Ải</button>
+                    <button class="menu-btn" onclick="navTo('screen-event')"><span class="icon">🎁</span> Sự Kiện</button>
+                    <button class="menu-btn" onclick="navTo('screen-gacha')"><span class="icon">🔮</span> Triệu Hồi</button>
+                    <button class="menu-btn" onclick="navTo('screen-roster')"><span class="icon">🛡️</span> Quản Lý Tướng</button>
+                    <button class="menu-btn" onclick="navTo('screen-inventory')"><span class="icon">🎒</span> Túi Đồ</button>
+                </div>
             </div>
-        </div>
 
-        <!-- MÀN HÌNH ĐẤU ẢI -->
-        <div id="screen-stage" class="screen">
-            <h2>HỆ THỐNG ẢI CHIẾN ĐẤU</h2>
-            <div id="chapters-container">
-                <!-- Javascript sẽ render 5 chương, 7 ải ở đây -->
+            <!-- MÀN HÌNH ĐẤU ẢI -->
+            <div id="screen-stage" class="screen">
+                <h2 class="title">BẢN ĐỒ CHIẾN ĐẤU</h2>
+                <div id="chapters-container"></div>
+                <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại sảnh</button>
             </div>
-            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
-        </div>
 
-        <!-- MÀN HÌNH SỰ KIỆN -->
-        <div id="screen-event" class="screen">
-            <h2>SỰ KIỆN</h2>
-            <p>Chúng tôi sẽ sớm cập nhập sự kiện thú vị!</p>
-            <div class="giftcode-box">
-                <input type="text" id="giftcode-input" placeholder="Nhập Giftcode tại đây">
-                <button onclick="claimGiftcode()">Nhận Quà</button>
+            <!-- MÀN HÌNH SỰ KIỆN -->
+            <div id="screen-event" class="screen">
+                <h2 class="title">SỰ KIỆN ĐẶC BIỆT</h2>
+                <div class="panel">
+                    <p>Chúng tôi sẽ sớm cập nhật sự kiện thú vị!</p>
+                    <div class="giftcode-box">
+                        <input type="text" id="giftcode-input" placeholder="Nhập Giftcode tại đây">
+                        <button class="action-btn" onclick="claimGiftcode()">Nhận Quà</button>
+                    </div>
+                    <p id="event-time" class="highlight-text"></p>
+                </div>
+                <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại sảnh</button>
             </div>
-            <p id="event-time"></p>
-            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
-        </div>
 
-        <!-- MÀN HÌNH TRIỆU HỒI -->
-        <div id="screen-gacha" class="screen">
-            <h2>KHU TRIỆU HỒI</h2>
-            <div class="tabs">
-                <button onclick="switchGachaTab(1)">🎡 Khu Vui Chơi (Điểm danh)</button>
-                <button onclick="switchGachaTab(2)">🔮 Triệu Hồi Nhân Vật</button>
+            <!-- MÀN HÌNH TRIỆU HỒI -->
+            <div id="screen-gacha" class="screen">
+                <h2 class="title">ĐÀI TRIỆU HỒI</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchGachaTab(1, this)">Điểm Danh</button>
+                    <button class="tab-btn" onclick="switchGachaTab(2, this)">Triệu Hồi</button>
+                </div>
+                <div id="gacha-tab-1" class="gacha-content active panel">
+                    <h3>Phần thưởng mỗi ngày</h3>
+                    <button class="action-btn" onclick="dailyLogin()">Điểm danh hôm nay</button>
+                </div>
+                <div id="gacha-tab-2" class="gacha-content panel">
+                    <h3>Cầu Nguyện Tướng</h3>
+                    <p>Tiêu hao: 1 🔮 Viên Ngọc Thần Bí</p>
+                    <button class="action-btn summon-btn" onclick="summon()">Triệu Hồi Ngay</button>
+                </div>
+                <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại sảnh</button>
             </div>
-            <div id="gacha-tab-1" class="gacha-content active">
-                <p>Đăng nhập hằng ngày nhận thưởng!</p>
-                <button onclick="dailyLogin()">Điểm danh hôm nay</button>
-            </div>
-            <div id="gacha-tab-2" class="gacha-content">
-                <p>Tỉ lệ: Kim cương/Xu cao, Tướng thấp (1 VNTB/lượt)</p>
-                <button onclick="summon()">Triệu Hồi (1 🔮)</button>
-                <p id="summon-result"></p>
-            </div>
-            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
-        </div>
 
-        <!-- MÀN HÌNH NHÂN VẬT & NÂNG CẤP -->
-        <div id="screen-roster" class="screen">
-            <h2>DANH SÁCH TƯỚNG</h2>
-            <div id="roster-list"></div>
-            <div class="team-setup">
-                <h3>Đội hình hiện tại (Vị trí 1 - 2 - 3)</h3>
-                <p>Gợi ý: 1 (DEF) - 2 (ATK) - 3 (SKL)</p>
-                <div id="current-team-display"></div>
+            <!-- MÀN HÌNH NHÂN VẬT & NÂNG CẤP -->
+            <div id="screen-roster" class="screen">
+                <h2 class="title">DOANH TRẠI</h2>
+                <div id="roster-list" class="roster-grid"></div>
+                <div class="team-setup panel">
+                    <h3>Đội hình xuất chiến</h3>
+                    <p>Đề cử: Vị trí 1 (DEF) - Vị trí 2 (ATK) - Vị trí 3 (SKL)</p>
+                    <div id="current-team-display">Kangu (1) - Mega Ner (2) - Jaco (3)</div>
+                </div>
+                <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại sảnh</button>
             </div>
-            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
-        </div>
 
-        <!-- MÀN HÌNH TÚI ĐỒ -->
-        <div id="screen-inventory" class="screen">
-            <h2>TÚI ĐỒ</h2>
-            <p>Kho chứa vật phẩm của bạn.</p>
-            <ul id="inventory-list"></ul>
-            <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại</button>
-        </div>
-
-        <!-- MÀN HÌNH CHIẾN ĐẤU -->
-        <div id="screen-battle" class="screen">
-            <h2>CHIẾN ĐẤU TRỰC TIẾP</h2>
-            <div class="battle-arena">
-                <div id="team-player" class="team-side"></div>
-                <div id="battle-log">Trận đấu bắt đầu...</div>
-                <div id="team-enemy" class="team-side"></div>
+            <!-- MÀN HÌNH TÚI ĐỒ -->
+            <div id="screen-inventory" class="screen">
+                <h2 class="title">TÚI ĐỒ</h2>
+                <div class="panel">
+                    <p>Kho chứa vật phẩm của bạn hiện đang trống.</p>
+                </div>
+                <button class="back-btn" onclick="navTo('screen-lobby')">Quay lại sảnh</button>
             </div>
-            <button id="end-battle-btn" style="display:none" onclick="navTo('screen-lobby')">Kết thúc trận</button>
+
+            <!-- MÀN HÌNH CHIẾN ĐẤU -->
+            <div id="screen-battle" class="screen">
+                <h2 class="title text-red">CHIẾN TRƯỜNG</h2>
+                <div class="battle-arena">
+                    <div id="team-player" class="team-side"></div>
+                    <div id="battle-log"></div>
+                    <div id="team-enemy" class="team-side"></div>
+                </div>
+                <button id="end-battle-btn" class="back-btn" style="display:none" onclick="navTo('screen-lobby')">Rút lui</button>
+            </div>
         </div>
     </div>
+
+    <!-- Hệ thống thông báo nổi (Toast) -->
+    <div id="toast-container"></div>
+
     <script src="game.js"></script>
 </body>
 </html>
